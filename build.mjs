@@ -1,0 +1,10 @@
+import fs from 'node:fs';
+import vm from 'node:vm';
+const assets={};for(const file of fs.readdirSync('public'))if(/\.(html|css|js|svg|json)$/.test(file))assets['/'+file]=fs.readFileSync('public/'+file,'utf8');
+const context={};vm.runInNewContext(fs.readFileSync('public/products.js','utf8')+';this.catalog=products;',context);
+const defaults={products:context.catalog,copy:{heroTitle:'A matter\nof time.',heroSubtitle:'A considered detail. An everyday companion. Find the watch that feels like you.',storyTitle:'Every detail. Your time.',storyBody:'A watch is personal. It marks the start of a day, a change of pace, a moment worth keeping.'}};
+fs.mkdirSync('dist/server',{recursive:true});fs.mkdirSync('dist/.openai',{recursive:true});
+fs.writeFileSync('dist/server/index.js',`const ASSETS=${JSON.stringify(assets)};\nconst DEFAULTS=${JSON.stringify(defaults)};\n`+fs.readFileSync('worker.mjs','utf8'));
+fs.copyFileSync('.openai/hosting.json','dist/.openai/hosting.json');
+fs.cpSync('drizzle','dist/.openai/drizzle',{recursive:true});
+console.log('Built Worker with storefront, protected admin and D1 content.');
